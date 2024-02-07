@@ -29,7 +29,14 @@ export function App() {
       <div className="grid auto-rows-[250px] grid-cols-3 gap-6">
         <NewNoteCard />
         {Array.from({ length: 6 }).map((_, index) => (
-          <NoteCard key={index} />
+          <NoteCard
+            key={index}
+            note={{
+              date: new Date(),
+              content:
+                'Lorem ipsum dolor sit, amet consectetur adipisicing elit.',
+            }}
+          />
         ))}
       </div>
     </div>
