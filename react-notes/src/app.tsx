@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { tv } from 'tailwind-variants'
 
 import logo from './assets/logo-nlw-expert.svg'
@@ -13,7 +14,43 @@ const styles = tv({
   },
 })
 
+type Note = {
+  id: string
+  date: Date
+  content: string
+}
+
 export function App() {
+  const [search, setSearch] = useState('')
+  const [notes, setNotes] = useState<Note[]>(() => {
+    const notesFromLocalStorage = localStorage.getItem('app/notes@1.0.0')
+    if (notesFromLocalStorage) {
+      return JSON.parse(notesFromLocalStorage)
+    }
+    return []
+  })
+
+  function onNoteCreated(content: string) {
+    const newNote = {
+      id: crypto.randomUUID(),
+      date: new Date(),
+      content,
+    }
+
+    const notesArray = [newNote, ...notes]
+
+    setNotes(notesArray)
+    localStorage.setItem('app/notes@1.0.0', JSON.stringify(notesArray))
+  }
+
+  function handleSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setSearch(event.target.value)
+  }
+
+  const filteredNotes = notes.filter((note) =>
+    note.content.toLowerCase().includes(search.toLowerCase()),
+  )
+
   const { input } = styles()
   return (
     <div className="mx-auto my-10 max-w-6xl space-y-6 p-4">
@@ -22,19 +59,19 @@ export function App() {
         <input
           type="text"
           placeholder="Busque em suas notas..."
+          onChange={handleSearchChange}
           className={input()}
         />
       </form>
       <div className="h-px bg-slate-700" />
       <div className="grid auto-rows-[250px] grid-cols-3 gap-6">
-        <NewNoteCard />
-        {Array.from({ length: 6 }).map((_, index) => (
+        <NewNoteCard onNoteCreated={onNoteCreated} />
+        {filteredNotes.map((note) => (
           <NoteCard
-            key={index}
+            key={note.id}
             note={{
-              date: new Date(),
-              content:
-                'Lorem ipsum dolor sit, amet consectetur adipisicing elit.',
+              date: note.date,
+              content: note.content,
             }}
           />
         ))}
